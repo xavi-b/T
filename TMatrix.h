@@ -4,33 +4,78 @@
 #include <iostream>
 #include <iomanip>
 #include <typeinfo>
-#include "TVector.h"
 #include "TException.h"
 
-template<size_t N, typename T=int>
+template<size_t N, size_t P, typename T=int>
 class TMatrix
 {
 protected:
-    T _m[N][N];
+    T _m[N][P];
 
 public:   
     TMatrix()
     {
         for(size_t i=0; i<N; i++)
-            for(size_t j=0; j<N; j++)
+            for(size_t j=0; j<P; j++)
                 _m[i][j] = 0;
     }
 
-    TMatrix(T m[N][N])
+    TMatrix(T m[N][P])
     {
         for(size_t i=0; i<N; i++)
-            for(size_t j=0; j<N; j++)
+            for(size_t j=0; j<P; j++)
                 _m[i][j] = m[i][j];
     }
 
-    T Det() const
+    T* M() const
     {
-        // TODO
+        return _m;
+    }
+
+    size_t Height() const
+    {
+        return N;
+    }
+
+    size_t Width() const
+    {
+        return P;
+    }
+
+    T Det() const throw(TException)
+    {
+        if(N!=P)
+            throw(TException("Matrix " + std::to_string(N) + "x" + std::to_string(P) + " is not a square matrix!", TExceptionType::NotInvertible));
+
+        if(N<2)
+            return N;
+
+        if(N==2)
+            return _m[0][0]*_m[1][1]-_m[0][1]*_m[1][0];
+
+        T det = 0;
+
+        if(N==3)
+        {
+            for(size_t i=0; i<N; i++)
+            {
+                T a = 1, b = 1;
+
+                for(size_t j=0; j<N; j++)
+                {
+                    a *= _m[j][(i+j)%N];
+                    b *= _m[(N-1)-j][(i+j)%N];
+                }
+
+                det += a - b;
+            }
+        }
+        else
+        {
+            // TODO
+        }
+
+        return det;
     }
 
     const TMatrix operator+(const TMatrix& t) const
@@ -41,7 +86,7 @@ public:
     TMatrix& operator+=(const TMatrix& t)
     {
         for(size_t i=0; i<N; i++)
-            for(size_t j=0; j<N; j++)
+            for(size_t j=0; j<P; j++)
                 _m[i][j] += t._m[i][j];
     }
 
@@ -50,43 +95,43 @@ public:
         return TMatrix(*this) -= t;
     }
 
-    TMatrix& operator-=(const TMatrix<N, T>& t)
+    TMatrix& operator-=(const TMatrix& t)
     {
         for(size_t i=0; i<N; i++)
-            for(size_t j=0; j<N; j++)
+            for(size_t j=0; j<P; j++)
                 _m[i][j] -= t._m[i][j];
     }
 
-    const TMatrix operator*(const TMatrix& t) const
+    template<size_t R>
+    const TMatrix<N, R, T> operator*(const TMatrix<P, R, T> & t) const
     {
-        return TMatrix(*this) *= t;
+        TMatrix<N, R, T> rt;
+        for(size_t i=0; i<N; i++)
+            for(size_t j=0; j<R; j++)
+                for(size_t k=0; k<P; k++)
+                    rt(i, j) += _m[i][k]*t(k,j);
+        return rt;
     }
 
-    TMatrix& operator*=(const TMatrix& t)
+    TMatrix& operator*=(const TMatrix<P, P, T>& t)
     {
-        TMatrix rt;
-        for(size_t i=0; i<N; i++)
-            for(size_t j=0; j<N; j++)
-                for(size_t k=0; k<N; k++)
-                    rt._m[i][j] += _m[i][k]*t._m[k][j];
-        return (*this) = rt;
+        return ((*this) = (*this)*t);
     }
 
-    const TMatrix operator~() const
+    const TMatrix<P, N, T> operator~() const
     {
-        TMatrix rt;
+        TMatrix<P, N, T> rt;
 
         for(size_t i=0; i<N; i++)
-            for(size_t j=0; j<N; j++)
-                rt._m[i][j] = _m[j][i];
+            for(size_t j=0; j<P; j++)
+                rt(j,i) = _m[i][j];
 
         return rt;
     }
 
-    const TMatrix operator!() const
+    const TMatrix operator!() const throw(TException)
     {
-        if(Det() == 0)
-            return TMatrix(*this);
+        size_t det = Det();
 
         TMatrix rt;
 
@@ -95,58 +140,43 @@ public:
         return rt;
     }
 
-    const TVectorC<N, T> operator*(const TVectorC<N, T>& t) const
+    const T& operator()(size_t x, size_t y) const throw(TException)
     {
-        TVector<N, T> rt;
-        for(size_t i=0; i<N; i++)
-            for(size_t j=0; j<N; j++)
-                rt._v[i] += t[i]*_m[i][j];
-        return rt;
-    }
-
-    const T& operator()(size_t x, size_t y) const
-    {
-        if(x>=N || y>= N)
-            throw(TException);
+        if(x>=N)
+            throw(TException(std::to_string(x) + ">=" + std::to_string(N) + "!", TExceptionType::OutOfBoundary));
+        if(y>=P)
+            throw(TException(std::to_string(y) + ">=" + std::to_string(P) + "!", TExceptionType::OutOfBoundary));
 
         return _m[x][y];
     }
 
-    T& operator()(size_t x, size_t y)
+    T& operator()(size_t x, size_t y) throw(TException)
     {
-        if(x>=N || y>= N)
-            throw(TException);
+        if(x>=N)
+            throw(TException(std::to_string(x) + ">=" + std::to_string(N) + "!", TExceptionType::OutOfBoundary));
+        if(y>=P)
+            throw(TException(std::to_string(y) + ">=" + std::to_string(P) + "!", TExceptionType::OutOfBoundary));
 
         return _m[x][y];
     }
 };
 
-template<size_t N, typename T>
-std::ostream& operator<<(std::ostream& os, const TMatrix<N, T>& t)
+template<size_t N, size_t P, typename T>
+std::ostream& operator<<(std::ostream& os, const TMatrix<N, P, T>& t)
 {
-    os << "TMatrix<" << N << ", " << typeid(T).name() << ">" << std::endl;
+    os << "TMatrix " << N << "x" << P << " " << typeid(T).name() << std::endl;
 
     for(size_t i=0; i<N; i++)
     {
         os << "| ";
 
-        for(size_t j=0; j<N; j++)
+        for(size_t j=0; j<P; j++)
             os << "\t" << t(i,j);
 
         os << " |" << std::endl;
     }
 
     return os;
-}
-
-template<size_t N, typename T>
-const TVectorH<N, T> operator*(const TVectorH<N, T>& tv, const TMatrix<N, T>& tm)
-{
-    TVectorH<N, T> rt;
-    for(size_t i=0; i<N; i++)
-        for(size_t j=0; j<N; j++)
-            rt._v[j] += tv[j]*tm(i,j);
-    return rt;
 }
 
 #endif // TMATRIX_H
