@@ -12,6 +12,35 @@ class TMatrix
 protected:
     T _m[N][P];
 
+    TMatrix& SwapColumns(size_t y1, size_t y2) const throw(TException)
+    {
+        T tmp;
+
+        for(size_t i=0; i<N; i++)
+        {
+            tmp = _m(i, y1);
+            _m(i, y1) = _m(i, y2);
+            _m(i, y2) = tmp;
+        }
+
+        return *this;
+    }
+
+    TMatrix& SwapRows(size_t x1, size_t x2) const throw(TException)
+    {
+        T tmp;
+
+        for(size_t i=0; i<P; i++)
+        {
+            tmp = _m(x1, i);
+            _m(x1, i) = _m(x2, i);
+            _m(x2, i) = tmp;
+        }
+
+        return *this;
+    }
+
+
 public:   
     TMatrix()
     {
@@ -78,7 +107,7 @@ public:
         return det;
     }
 
-    const TMatrix operator+(const TMatrix& t) const
+    TMatrix operator+(const TMatrix& t) const
     {
         return TMatrix(*this) += t;
     }
@@ -88,9 +117,11 @@ public:
         for(size_t i=0; i<N; i++)
             for(size_t j=0; j<P; j++)
                 _m[i][j] += t._m[i][j];
+
+        return *this;
     }
 
-    const TMatrix operator-(const TMatrix& t) const
+    TMatrix operator-(const TMatrix& t) const
     {
         return TMatrix(*this) -= t;
     }
@@ -100,10 +131,12 @@ public:
         for(size_t i=0; i<N; i++)
             for(size_t j=0; j<P; j++)
                 _m[i][j] -= t._m[i][j];
+
+        return *this;
     }
 
     template<size_t R>
-    const TMatrix<N, R, T> operator*(const TMatrix<P, R, T> & t) const
+    TMatrix<N, R, T> operator*(const TMatrix<P, R, T> & t) const
     {
         TMatrix<N, R, T> rt;
         for(size_t i=0; i<N; i++)
@@ -118,7 +151,7 @@ public:
         return ((*this) = (*this)*t);
     }
 
-    const TMatrix<P, N, T> operator~() const
+    TMatrix<P, N, T> operator~() const
     {
         TMatrix<P, N, T> rt;
 
@@ -129,7 +162,7 @@ public:
         return rt;
     }
 
-    const TMatrix operator!() const throw(TException)
+    TMatrix operator!() const throw(TException)
     {
         size_t det = Det();
 
@@ -138,6 +171,47 @@ public:
         // TODO
 
         return rt;
+    }
+
+    TMatrix operator*(const T& k) const
+    {
+        return TMatrix(*this) *= k;
+    }
+
+    TMatrix& operator*=(const T& k)
+    {
+        for(size_t i=0; i<N; i++)
+            for(size_t j=0; j<P; j++)
+                _m[i][j] *= k;
+
+        return *this;
+    }
+
+    TMatrix operator/(const T& k) const throw(TException)
+    {
+        return TMatrix(*this) /= k;
+    }
+
+    TMatrix& operator/=(const T& k) throw(TException)
+    {
+        if((int)k==0)
+            throw(TException("You can't divide by 0!", TExceptionType::ZeroDivision));
+
+        for(size_t i=0; i<N; i++)
+            for(size_t j=0; j<P; j++)
+                _m[i][j] /= k;
+
+        return *this;
+    }
+
+    TMatrix operator-() const
+    {
+        return TMatrix(*this)*=-1;
+    }
+
+    TMatrix operator+() const
+    {
+        return TMatrix(*this);
     }
 
     const T& operator()(size_t x, size_t y) const throw(TException)
@@ -158,6 +232,16 @@ public:
             throw(TException(std::to_string(y) + ">=" + std::to_string(P) + "!", TExceptionType::OutOfBoundary));
 
         return _m[x][y];
+    }
+
+    static TMatrix<N, P, T> I()
+    {
+        TMatrix<N, P, T> rt;
+
+        for(size_t i=0; i<((N<P) ? N : P); i++)
+                rt(i, i) = 1;
+
+        return rt;
     }
 };
 

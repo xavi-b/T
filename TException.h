@@ -6,7 +6,7 @@
 
 enum TExceptionType
 {
-    Unknown, OutOfBoundary, NotInvertible
+    Unknown, OutOfBoundary, NotInvertible, ZeroDivision
 };
 
 class TException
