@@ -204,6 +204,34 @@ public:
         return *this;
     }
 
+    TMatrix operator+(const T& k) const
+    {
+        return TMatrix(*this) += k;
+    }
+
+    TMatrix& operator+=(const T& k)
+    {
+        for(size_t i=0; i<N; i++)
+            for(size_t j=0; j<P; j++)
+                _m[i][j] += k;
+
+        return *this;
+    }
+
+    TMatrix operator-(const T& k) const
+    {
+        return TMatrix(*this) -= k;
+    }
+
+    TMatrix& operator-=(const T& k)
+    {
+        for(size_t i=0; i<N; i++)
+            for(size_t j=0; j<P; j++)
+                _m[i][j] -= k;
+
+        return *this;
+    }
+
     TMatrix operator-() const
     {
         return TMatrix(*this)*=-1;
@@ -212,6 +240,32 @@ public:
     TMatrix operator+() const
     {
         return TMatrix(*this);
+    }
+
+    TMatrix& operator++()
+    {
+        *this += 1;
+        return *this;
+    }
+
+    TMatrix operator++(int)
+    {
+        TMatrix rt(*this);
+        this->operator++();
+        return rt;
+    }
+
+    TMatrix& operator--()
+    {
+        *this -= 1;
+        return *this;
+    }
+
+    TMatrix operator--(int)
+    {
+        TMatrix rt(*this);
+        this->operator--();
+        return rt;
     }
 
     const T& operator()(size_t x, size_t y) const throw(TException)
@@ -232,6 +286,21 @@ public:
             throw(TException(std::to_string(y) + ">=" + std::to_string(P) + "!", TExceptionType::OutOfBoundary));
 
         return _m[x][y];
+    }
+
+    bool operator==(const TMatrix& t) const
+    {
+        for(size_t i=0; i<N; i++)
+            for(size_t j=0; j<P; j++)
+                if(_m[i][j] != t._m[i][j])
+                    return false;
+
+        return true;
+    }
+
+    bool operator!=(const TMatrix& t) const
+    {
+        return !(*this == t);
     }
 
     static TMatrix<N, P, T> I()
