@@ -42,11 +42,11 @@ protected:
 
 
 public:   
-    TMatrix()
+    TMatrix(const T& k=0)
     {
         for(size_t i=0; i<N; i++)
             for(size_t j=0; j<P; j++)
-                _m[i][j] = 0;
+                _m[i][j] = k;
     }
 
     TMatrix(T m[N][P])
