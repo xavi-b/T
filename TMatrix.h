@@ -40,7 +40,6 @@ protected:
         return *this;
     }
 
-
 public:   
     TMatrix(const T& k=0)
     {

@@ -38,5 +38,4 @@ std::ostream& operator<<(std::ostream& os, const TException& e)
     return os << e.GetMsg() << std::endl;
 }
 
-
 #endif // TEXCEPTION_H
