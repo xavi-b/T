@@ -18,7 +18,7 @@ public:
             _pts[i] = pts[i];
     }
 
-    TFigure operator*(const T& k)
+    TFigure operator*(const T& k) const
     {
         return TFigure(*this)*=k;
     }
@@ -60,6 +60,16 @@ public:
     {
         return !(*this == t);
     }
+
+    T Perimeter() const
+    {
+        T d = 0;
+
+        for(size_t i=0; i<N; i++)
+            d += _pts[i].Distance();
+
+        return d;
+    }
 };
 
 template<size_t N, typename T>
@@ -69,7 +79,7 @@ std::ostream& operator<<(std::ostream& os, const TFigure<N, T>& t)
 
     os << "{ ";
     for(size_t i=0; i<N; i++)
-        os << _pts[i] << std::endl;
+        os << t(i) << std::endl;
     os << " }" << std::endl;
 
     return os;

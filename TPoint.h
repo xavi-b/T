@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <typeinfo>
+#include <math.h>
 
 template<size_t N, typename T>
 class TPoint
@@ -23,7 +24,7 @@ public:
             _coords[i] = coords[i];
     }
 
-    TPoint operator*(const T& k)
+    TPoint operator*(const T& k) const
     {
         return TPoint(*this)*=k;
     }
@@ -36,9 +37,9 @@ public:
         return *this;
     }
 
-    TPoint operator+(const TPoint& p)
+    TPoint operator+(const TPoint& p) const
     {
-        return TPoint(*this)+=k;
+        return TPoint(*this)+=p;
     }
 
     TPoint& operator+=(const TPoint& p)
@@ -49,9 +50,9 @@ public:
         return *this;
     }
 
-    TPoint operator-(const TPoint& p)
+    TPoint operator-(const TPoint& p) const
     {
-        return TPoint(*this)-=k;
+        return TPoint(*this)-=p;
     }
 
     TPoint& operator-=(const TPoint& p)
@@ -111,6 +112,16 @@ public:
 
         return d;
     }
+
+    T Distance() const
+    {
+        T d = 0;
+
+        for(size_t i=0; i<N; i++)
+            d += _coords[i]*_coords[i];
+
+        return T(sqrt(double(d)));
+    }
 };
 
 template<size_t N, typename T>
@@ -119,7 +130,7 @@ std::ostream& operator<<(std::ostream& os, const TPoint<N, T>& t)
     os << "{ ";
     for(size_t i=0; i<N; i++)
     {
-        os << _coords[i];
+        os << t(i);
 	if(i != N-1)
 	    os << ", ";
     }
